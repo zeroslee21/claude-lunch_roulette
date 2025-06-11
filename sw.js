@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lunch-roulette-v3';
+const CACHE_NAME = 'lunch-roulette-v3'; // 버전 업데이트
 const urlsToCache = [
   './',
   './index.html',
@@ -34,6 +34,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('[Service Worker] 이전 캐시 삭제:', cacheName);
             return caches.delete(cacheName);
           }
         })
