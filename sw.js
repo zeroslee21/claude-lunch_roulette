@@ -1,22 +1,26 @@
 const CACHE_NAME = 'lunch-roulette-v1';
 const urlsToCache = [
-  '/claude-lunch_roulette/',
-  '/claude-lunch_roulette/index.html',
-  '/claude-lunch_roulette/lunch_app_icon.png',
-  '/claude-lunch_roulette/manifest.json',
+  './',
+  './index.html',
+  './lunch_app_icon.png',
+  './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'
 ];
 
 // 설치 이벤트 - 캐시 저장
 self.addEventListener('install', event => {
+  console.log('[Service Worker] 설치 시작');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('캐시에 파일 저장 중');
-        return cache.addAll(urlsToCache);
+        console.log('[Service Worker] 캐시 열기 성공');
+        return cache.addAll(urlsToCache)
+          .then(() => {
+            console.log('[Service Worker] 모든 리소스 캐시 완료');
+          });
       })
       .catch(error => {
-        console.error('캐시 저장 실패:', error);
+        console.error('[Service Worker] 캐시 저장 실패:', error);
       })
   );
   self.skipWaiting();
