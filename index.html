@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>점심 메뉴 룰렛</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #5a47c7 0%, #6b3b93 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100vw;
+            height: 100vh;
+            height: -webkit-fill-available;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+            padding: 15px 10px 10px;
+            text-shadow: 
+                -2px -2px 4px rgba(0, 0, 0, 0.8),
+                2px -2px 4px rgba(0, 0, 0, 0.8),
+                -2px 2px 4px rgba(0, 0, 0, 0.8),
+                2px 2px 4px rgba(0, 0, 0, 0.8),
+                0 0 8px rgba(0, 0, 0, 0.9);
+            flex-shrink: 0;
+            font-weight: bold;
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-section {
+            padding: 10px 15px;
+            flex-shrink: 0;
+        }
+
+        .menu-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .menu-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            -webkit-appearance: none;
+        }
+
+        .menu-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .add-button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.3s;
+            flex-shrink: 0;
+            -webkit-appearance: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-button:active {
+            transform: scale(0.95);
+            background: #45b7b8;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 5px 0;
+        }
+
+        .menu-item {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            font-weight: 500;
+        }
+
+        .remove-btn {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+        }
+
+        .remove-btn:active {
+            transform: scale(0.8);
+        }
+
+        .roulette-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .roulette-container {
+            position: relative;
+            width: min(80vw, 350px);
+            height: min(80vw, 350px);
+            margin-bottom: 20px;
+        }
+
+        .arrow {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff6b6b;
+            z-index: 10;
+            filter: 
+                drop-shadow(0 0 3px rgba(0, 0, 0, 0.8))
+                drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+        }
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            top: -33px;
+            left: -18px;
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 36px solid rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        .wheel-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .button-section {
+            padding: 0 15px 20px;
+            flex-shrink: 0;
+        }
+
+        .spin-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 35px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+            transition: transform 0.1s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            -webkit-appearance: none;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .spin-button:active {
+            transform: scale(0.95);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            display: none;
+        }
+
+        /* 결과 팝업 */
+        .result-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .result-popup.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, #5a47c7, #6b3b93);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            position: relative;
+            max-width: 85vw;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 0 30px rgba(255, 255, 255, 0.1);
+            animation: popupBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes popupBounce {
+            0% {
+                transform: scale(0) rotate(180deg);
+            }
+            50% {
+                transform: scale(1.1) rotate(90deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .result-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: emojiDance 1s ease-in-out infinite;
+        }
+
+        @keyframes emojiDance {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+            }
+            25% {
+                transform: scale(1.1) rotate(-10deg);
+            }
+            75% {
+                transform: scale(1.1) rotate(10deg);
+            }
+        }
+
+        .result-title {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 
+                2px 2px 4px rgba(0, 0, 0, 0.8),
+                0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .result-menu {
+            font-size: 36px;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-shadow: 
+                3px 3px 6px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.3);
+            animation: menuGlow 1.5s ease-in-out infinite;
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes menuGlow {
+            0%, 100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.05);
+                filter: brightness(1.2);
+            }
+        }
+
+        .close-popup {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .close-popup:hover {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .close-popup:active {
+            transform: scale(0.95);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        /* 폭죽 효과 */
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: firework 1s ease-out forwards;
+        }
+
+        @keyframes firework {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: particle 1s ease-out forwards;
+        }
+
+        @keyframes particle {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .action-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .reset-button {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-button:active {
+            transform: scale(0.95);
+            background: rgba(192, 57, 43, 1);
+        }
+
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            opacity: 0;
+            transition: all 0.3s;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .debug-toggle {
+            position: absolute;
+            top: 10px;
+            top: calc(10px + env(safe-area-inset-top));
+            right: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 20;
+            font-weight: 500;
+        }
+
+        .debug-info {
+            position: absolute;
+            top: 45px;
+            top: calc(45px + env(safe-area-inset-top));
+            right: 10px;
+            color: white;
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            text-align: left;
+            line-height: 1.5;
+            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+
+        .debug-info.show {
+            display: block;
+        }
+
+        /* 가로 모드 대응 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            h1 {
+                font-size: 1.5rem;
+                padding: 10px;
+            }
+            
+            .menu-section {
+                padding: 5px 15px;
+            }
+            
+            .menu-list {
+                max-height: 60px;
+            }
+            
+            .roulette-container {
+                width: min(50vh, 250px);
+                height: min(50vh, 250px);
+            }
+            
+            .spin-button {
+                padding: 12px 40px;
+                font-size: 18px;
+            }
+            
+            .result {
+                margin-top: 10px;
+                font-size: 18px;
+            }
+        }
+
+        /* 아주 작은 화면 대응 */
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .menu-controls {
+                flex-direction: column;
+            }
+            
+            .add-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="debug-toggle" onclick="toggleDebug()">디버그</button>
+        <div class="debug-info" id="debug"></div>
+        
+        <h1>🍽️ 오늘 점심 뭐 먹지?</h1>
+        
+        <div class="menu-section">
+            <div class="menu-controls">
+                <input type="text" class="menu-input" placeholder="메뉴 추가" id="menuInput" autocomplete="off">
+                <button class="add-button" onclick="addMenu()">추가</button>
+            </div>
+            
+            <div class="menu-list" id="menuList"></div>
+        </div>
+        
+        <div class="roulette-section">
+            <div class="roulette-container">
+                <div class="arrow"></div>
+                <div class="wheel-wrapper">
+                    <canvas id="wheelCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-section">
+            <button class="spin-button" id="spinButton" onclick="spin()">돌리기!</button>
+            <div class="result" id="result"></div>
+            
+            <div class="action-buttons">
+                <button class="reset-button" onclick="resetToDefault()">초기화</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="save-indicator" id="saveIndicator">
+        <span id="saveMessage">저장됨!</span>
+    </div>
+
+    <!-- 결과 팝업 -->
+    <div class="result-popup" id="resultPopup" onclick="closePopup(event)">
+        <div class="popup-content" onclick="event.stopPropagation()">
+            <div class="result-emoji">🎉</div>
+            <div class="result-title">오늘의 점심은</div>
+            <div class="result-menu" id="resultMenu">메뉴</div>
+            <button class="close-popup" onclick="closePopup()">확인</button>
+        </div>
+    </div>
+
+    <script>
+        // localStorage 키
+        const STORAGE_KEY = 'lunchRouletteMenus';
+        
+        // 기본 메뉴
+        const defaultMenus = ['김치찌개', '된장찌개', '제육볶음', '비빔밥', '짜장면', '짬뽕', '햄버거', '피자'];
+        
+        // localStorage에서 메뉴 불러오기 (없으면 기본값 사용)
+        let menus = loadMenusFromStorage();
+        
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7b8', '#f7b731', '#5f27cd', '#00d2d3', '#ff9ff3', '#54a0ff'];
+        let isSpinning = false;
+        let currentRotation = 0;
+        let menuSegments = [];
+
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 캔버스 크기 동적 설정
+        function resizeCanvas() {
+            const container = document.querySelector('.roulette-container');
+            const size = Math.min(container.offsetWidth, container.offsetHeight);
+            canvas.width = size;
+            canvas.height = size;
+            drawWheel();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // localStorage에서 메뉴 불러오기
+        function loadMenusFromStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.error('메뉴 불러오기 실패:', e);
+            }
+            return [...defaultMenus];
+        }
+
+        // localStorage에 메뉴 저장
+        function saveMenusToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(menus));
+                showSaveIndicator('저장됨!');
+            } catch (e) {
+                console.error('메뉴 저장 실패:', e);
+                showSaveIndicator('저장 실패!', true);
+            }
+        }
+
+        // 저장 표시
+        function showSaveIndicator(message, isError = false) {
+            const indicator = document.getElementById('saveIndicator');
+            const messageEl = document.getElementById('saveMessage');
+            
+            messageEl.textContent = message;
+            indicator.style.background = isError ? 'rgba(231, 76, 60, 0.95)' : 'rgba(76, 175, 80, 0.95)';
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        function updateMenuSegments() {
+            menuSegments = [];
+            if (menus.length === 0) return;
+            
+            const anglePerSlice = 360 / menus.length;
+            
+            menus.forEach((menu, index) => {
+                const startAngle = index * anglePerSlice;
+                const endAngle = (index + 1) * anglePerSlice;
+                menuSegments.push({
+                    menu: menu,
+                    index: index,
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    color: colors[index % colors.length]
+                });
+            });
+        }
+
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = (Math.min(canvas.width, canvas.height) / 2) * 0.9;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            
+            // 캔버스 중심으로 이동하고 회전
+            ctx.translate(centerX, centerY);
+            ctx.rotate(currentRotation * Math.PI / 180);
+            ctx.translate(-centerX, -centerY);
+            
+            if (menus.length === 0) {
+                ctx.restore();
+                return;
+            }
+            
+            const anglePerSlice = (2 * Math.PI) / menus.length;
+            
+            menus.forEach((menu, index) => {
+                // 파이 조각 그리기
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                // 12시 방향부터 시작
+                const startAngle = index * anglePerSlice - Math.PI / 2;
+                const endAngle = (index + 1) * anglePerSlice - Math.PI / 2;
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fill();
+                
+                // 테두리 그리기
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 흰색 테두리 추가
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // 텍스트 그리기
+                ctx.save();
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${Math.min(16, radius/12)}px -apple-system, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // 더 강한 그림자 효과
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                
+                // 텍스트 테두리 추가
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.lineWidth = 3;
+                
+                const textAngle = startAngle + anglePerSlice / 2;
+                const textRadius = radius * 0.65;
+                const textX = centerX + Math.cos(textAngle) * textRadius;
+                const textY = centerY + Math.sin(textAngle) * textRadius;
+                
+                ctx.translate(textX, textY);
+                ctx.rotate(textAngle + Math.PI / 2);
+                
+                // 긴 텍스트는 줄여서 표시
+                let displayText = menu;
+                if (menu.length > 8) {
+                    displayText = menu.substring(0, 7) + '...';
+                }
+                
+                // 테두리 먼저 그리기
+                ctx.strokeText(displayText, 0, 0);
+                // 그 위에 채워진 텍스트 그리기
+                ctx.fillText(displayText, 0, 0);
+                ctx.restore();
+            });
+            
+            // 중앙 원 그리기
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.15, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+
+        function getSelectedMenu() {
+            if (menuSegments.length === 0) return null;
+            
+            // 현재 회전 각도를 0-360 범위로 정규화
+            let normalizedRotation = currentRotation % 360;
+            if (normalizedRotation < 0) normalizedRotation += 360;
+            
+            // 각 메뉴 세그먼트를 확인
+            for (const segment of menuSegments) {
+                // 세그먼트의 현재 위치 계산 (회전 반영)
+                let segmentStart = (segment.startAngle + normalizedRotation) % 360;
+                let segmentEnd = (segment.endAngle + normalizedRotation) % 360;
+                
+                // 화살표는 0도(12시 방향)에 있음
+                const arrowPosition = 0;
+                
+                // 세그먼트가 0도를 걸치는 경우 처리
+                if (segmentStart > segmentEnd) {
+                    if (arrowPosition >= segmentStart || arrowPosition < segmentEnd) {
+                        return segment;
+                    }
+                } else {
+                    if (arrowPosition >= segmentStart && arrowPosition < segmentEnd) {
+                        return segment;
+                    }
+                }
+            }
+            
+            // 경계 케이스 처리
+            return menuSegments[0];
+        }
+
+        function updateDebugInfo() {
+            const debug = document.getElementById('debug');
+            const selected = getSelectedMenu();
+            const normalizedRotation = currentRotation % 360;
+            
+            debug.innerHTML = `
+                회전: ${normalizedRotation.toFixed(1)}°<br>
+                선택: ${selected ? selected.menu : 'none'}<br>
+                메뉴: ${menus.length}개<br>
+                화면: ${window.innerWidth}x${window.innerHeight}
+            `;
+        }
+
+        function toggleDebug() {
+            const debug = document.getElementById('debug');
+            debug.classList.toggle('show');
+            updateDebugInfo();
+        }
+
+        function updateMenuList() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+            
+            menus.forEach((menu, index) => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.style.background = `linear-gradient(135deg, ${colors[index % colors.length]}80, ${colors[index % colors.length]}50)`;
+                item.style.borderColor = colors[index % colors.length];
+                item.innerHTML = `
+                    ${menu}
+                    <span class="remove-btn" onclick="removeMenu(${index})">×</span>
+                `;
+                menuList.appendChild(item);
+            });
+            
+            updateMenuSegments();
+            drawWheel();
+            
+            // 메뉴가 변경될 때마다 저장
+            saveMenusToStorage();
+        }
+
+        function addMenu() {
+            const input = document.getElementById('menuInput');
+            const menu = input.value.trim();
+            
+            if (menu && !menus.includes(menu)) {
+                menus.push(menu);
+                input.value = '';
+                updateMenuList();
+                
+                // 모바일 키보드 숨기기
+                input.blur();
+            }
+        }
+
+        function removeMenu(index) {
+            menus.splice(index, 1);
+            updateMenuList();
+        }
+
+        function resetToDefault() {
+            if (confirm('기본 메뉴로 초기화하시겠습니까?')) {
+                menus = [...defaultMenus];
+                updateMenuList();
+                showSaveIndicator('초기화 완료!');
+            }
+        }
+
+        function spin() {
+            if (isSpinning || menus.length === 0) return;
+            
+            isSpinning = true;
+            const button = document.getElementById('spinButton');
+            const result = document.getElementById('result');
+            
+            button.disabled = true;
+            result.classList.remove('show');
+            
+            // 진동 피드백 (지원하는 경우)
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+            
+            // 랜덤 회전 각도 계산
+            const spins = 4 + Math.random() * 2; // 모바일에서는 조금 짧게
+            const randomAngle = Math.random() * 360;
+            const totalRotation = spins * 360 + randomAngle;
+            const targetRotation = currentRotation + totalRotation;
+            
+            // GSAP 애니메이션
+            const animObj = { rotation: currentRotation };
+            gsap.to(animObj, {
+                rotation: targetRotation,
+                duration: 3, // 모바일에서는 조금 빠르게
+                ease: "power3.out",
+                onUpdate: function() {
+                    currentRotation = animObj.rotation;
+                    drawWheel();
+                    if (document.querySelector('.debug-info.show')) {
+                        updateDebugInfo();
+                    }
+                },
+                onComplete: () => {
+                    currentRotation = targetRotation % 360;
+                    if (currentRotation < 0) currentRotation += 360;
+                    
+                    // 최종 위치에서 다시 그리기
+                    drawWheel();
+                    updateDebugInfo();
+                    
+                    // 선택된 메뉴 가져오기
+                    const selected = getSelectedMenu();
+                    
+                    if (selected) {
+                        // 화려한 팝업 표시
+                        showResultPopup(selected.menu);
+                        
+                        // 결과 진동 피드백
+                        if (navigator.vibrate) {
+                            navigator.vibrate([100, 50, 100, 50, 200]);
+                        }
+                    }
+                    
+                    button.disabled = false;
+                    isSpinning = false;
+                }
+            });
+        }
+
+        // Enter 키로 메뉴 추가
+        document.getElementById('menuInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addMenu();
+            }
+        });
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            updateMenuList();
+            // 초기 로드 시에는 저장 표시를 하지 않음
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.remove('show');
+        });
+
+        // 초기화
+        updateMenuSegments();
+        
+        // 메뉴 목록 표시 (저장 표시 없이)
+        const menuList = document.getElementById('menuList');
+        menus.forEach((menu, index) => {
+            const item = document.createElement('div');
+            item.className = 'menu-item';
+            item.style.background = `linear-gradient(135deg, ${colors[index % colors.length]}80, ${colors[index % colors.length]}50)`;
+            item.style.borderColor = colors[index % colors.length];
+            item.innerHTML = `
+                ${menu}
+                <span class="remove-btn" onclick="removeMenu(${index})">×</span>
+            `;
+            menuList.appendChild(item);
+        });
+        
+        // iOS에서 100vh 문제 해결
+        function setVH() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', setVH);
+
+        // 결과 팝업 표시
+        function showResultPopup(menu) {
+            const popup = document.getElementById('resultPopup');
+            const menuEl = document.getElementById('resultMenu');
+            const popupContent = popup.querySelector('.popup-content');
+            
+            menuEl.textContent = menu;
+            popup.classList.add('show');
+            
+            // 랜덤 이모지
+            const emojis = ['🎉', '🎊', '🥳', '🎈', '✨', '🎆', '🎇', '🌟'];
+            const emojiEl = popup.querySelector('.result-emoji');
+            emojiEl.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            // 폭죽 효과 생성
+            setTimeout(() => {
+                createFireworks(popupContent);
+            }, 300);
+            
+            // 파티클 효과 생성
+            createParticles(popupContent);
+        }
+
+        // 팝업 닫기
+        function closePopup(event) {
+            if (!event || event.target.id === 'resultPopup' || event.target.classList.contains('close-popup')) {
+                const popup = document.getElementById('resultPopup');
+                popup.classList.remove('show');
+                
+                // 폭죽과 파티클 제거
+                setTimeout(() => {
+                    const particles = popup.querySelectorAll('.firework, .particle');
+                    particles.forEach(p => p.remove());
+                }, 100);
+            }
+        }
+
+        // 폭죽 효과 생성
+        function createFireworks(container) {
+            const colors = ['#ff6b6b', '#4ecdc4', '#f7b731', '#ff9ff3', '#54a0ff', '#FFD700'];
+            const count = 20;
+            
+            for (let i = 0; i < count; i++) {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                
+                const angle = (360 / count) * i;
+                const velocity = 100 + Math.random() * 100;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                firework.style.background = color;
+                firework.style.left = '50%';
+                firework.style.top = '30%';
+                firework.style.boxShadow = `0 0 6px ${color}`;
+                
+                const rad = (angle * Math.PI) / 180;
+                const x = Math.cos(rad) * velocity;
+                const y = Math.sin(rad) * velocity;
+                
+                firework.animate([
+                    { transform: 'translate(-50%, -50%) translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(-50%, -50%) translate(${x}px, ${y}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000,
+                    easing: 'cubic-bezier(0, 0, 0.2, 1)'
+                });
+                
+                container.appendChild(firework);
+                
+                setTimeout(() => firework.remove(), 1000);
+            }
+        }
+
+        // 파티클 효과 생성
+        function createParticles(container) {
+            const colors = ['#ff6b6b', '#4ecdc4', '#f7b731', '#ff9ff3', '#54a0ff', '#FFD700', '#00d2d3'];
+            const shapes = ['circle', 'square'];
+            const count = 30;
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                    const size = 6 + Math.random() * 8;
+                    
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    particle.style.background = color;
+                    particle.style.borderRadius = shape === 'circle' ? '50%' : '0';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.setProperty('--x', (Math.random() - 0.5) * 200 + 'px');
+                    particle.style.setProperty('--y', (Math.random() - 0.5) * 200 + 'px');
+                    
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 1000);
+                }, i * 30);
+            }
+        }
+    </script>
+</body>
+</html>
