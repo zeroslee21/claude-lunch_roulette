@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lunch-roulette-v1';
+const CACHE_NAME = 'lunch-roulette-v3';
 const urlsToCache = [
   './',
   './index.html',
