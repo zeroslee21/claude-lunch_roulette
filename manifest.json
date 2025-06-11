@@ -2,23 +2,31 @@
   "name": "오늘 점심 뭐 먹지? - 점심 메뉴 룰렛",
   "short_name": "점심 룰렛",
   "description": "점심 메뉴를 재미있게 결정해주는 룰렛 앱",
-  "start_url": "/claude-lunch_roulette/",
+  "id": "/claude-lunch_roulette/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#5a47c7",
   "theme_color": "#5a47c7",
-  "orientation": "portrait",
-  "scope": "/claude-lunch_roulette/",
+  "orientation": "portrait-primary",
+  "scope": "./",
   "icons": [
     {
       "src": "lunch_app_icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "lunch_app_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "lunch_app_icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "lunch_app_icon.png",

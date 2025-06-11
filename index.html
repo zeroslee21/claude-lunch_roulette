@@ -8,7 +8,7 @@
     <title>오늘 점심 뭐 먹지? - 점심 메뉴 룰렛</title>
     
     <!-- PWA 매니페스트 -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/claude-lunch_roulette/manifest.json" crossorigin="use-credentials">
     
     <!-- 파비콘 및 아이콘 -->
     <link rel="icon" type="image/png" href="lunch_app_icon.png">
@@ -516,6 +516,33 @@
             font-weight: 500;
         }
 
+        .install-button {
+            position: absolute;
+            top: 10px;
+            top: calc(10px + env(safe-area-inset-top));
+            left: 10px;
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 20;
+            font-weight: 600;
+            display: none;
+            transition: all 0.3s;
+        }
+
+        .install-button:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+
+        .install-button:active {
+            transform: scale(0.95);
+        }
+
         .debug-info {
             position: absolute;
             top: 45px;
@@ -587,6 +614,7 @@
 </head>
 <body>
     <div class="container">
+        <button class="install-button" id="installButton" onclick="installPWA()">📱 앱 설치</button>
         <button class="debug-toggle" onclick="toggleDebug()">디버그</button>
         <div class="debug-info" id="debug"></div>
         
@@ -855,11 +883,17 @@
             const selected = getSelectedMenu();
             const normalizedRotation = currentRotation % 360;
             
+            // PWA 상태 확인
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+            const hasServiceWorker = 'serviceWorker' in navigator;
+            
             debug.innerHTML = `
                 회전: ${normalizedRotation.toFixed(1)}°<br>
                 선택: ${selected ? selected.menu : 'none'}<br>
                 메뉴: ${menus.length}개<br>
-                화면: ${window.innerWidth}x${window.innerHeight}
+                화면: ${window.innerWidth}x${window.innerHeight}<br>
+                PWA: ${isPWA ? '독립실행' : '브라우저'}<br>
+                SW: ${hasServiceWorker ? '지원' : '미지원'}
             `;
         }
 
@@ -995,6 +1029,12 @@
             // 초기 로드 시에는 저장 표시를 하지 않음
             const indicator = document.getElementById('saveIndicator');
             indicator.classList.remove('show');
+            
+            // PWA 설치 가능 여부 확인
+            console.log('PWA 환경 확인:');
+            console.log('- HTTPS:', window.location.protocol === 'https:');
+            console.log('- Service Worker 지원:', 'serviceWorker' in navigator);
+            console.log('- Manifest 링크:', document.querySelector('link[rel="manifest"]')?.href);
         });
 
         // 초기화
@@ -1026,9 +1066,14 @@
         // Service Worker 등록
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/claude-lunch_roulette/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then(registration => {
                         console.log('Service Worker 등록 성공:', registration.scope);
+                        
+                        // 업데이트 확인
+                        registration.addEventListener('updatefound', () => {
+                            console.log('Service Worker 업데이트 발견');
+                        });
                     })
                     .catch(error => {
                         console.log('Service Worker 등록 실패:', error);
@@ -1038,13 +1083,50 @@
 
         // PWA 설치 프롬프트
         let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             
-            // 설치 버튼을 표시하거나 사용자에게 알림을 줄 수 있습니다
+            // 설치 버튼 표시
+            installButton.style.display = 'block';
             console.log('PWA 설치 가능');
         });
+        
+        // PWA 설치 함수
+        function installPWA() {
+            if (!deferredPrompt) {
+                console.log('설치 프롬프트를 사용할 수 없습니다');
+                return;
+            }
+            
+            // 설치 프롬프트 표시
+            deferredPrompt.prompt();
+            
+            // 사용자의 선택 대기
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('PWA 설치 수락');
+                    installButton.style.display = 'none';
+                } else {
+                    console.log('PWA 설치 거절');
+                }
+                deferredPrompt = null;
+            });
+        }
+        
+        // 이미 설치된 경우 버튼 숨기기
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA 설치 완료');
+            installButton.style.display = 'none';
+        });
+        
+        // 독립 실행 모드 확인
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('PWA 독립 실행 모드');
+            installButton.style.display = 'none';
+        }
 
         // 결과 팝업 표시
         function showResultPopup(menu) {

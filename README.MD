@@ -17,9 +17,17 @@
 [https://zeroslee21.github.io/claude-lunch_roulette/](https://zeroslee21.github.io/claude-lunch_roulette/)
 
 ### 홈 화면에 추가하기 (PWA)
-1. 모바일 브라우저에서 위 링크 접속
+
+#### 모바일 (Android/iOS)
+1. Chrome 또는 Safari에서 위 링크 접속
 2. 브라우저 메뉴에서 "홈 화면에 추가" 선택
 3. 앱처럼 사용하기
+
+#### 데스크톱 (Chrome/Edge)
+1. Chrome 또는 Edge에서 위 링크 접속
+2. 주소창 오른쪽의 설치 아이콘(⊕) 클릭
+3. 또는 화면 왼쪽 상단의 "📱 앱 설치" 버튼 클릭
+4. "설치" 클릭
 
 ### 로컬에서 실행하기
 ```bash
@@ -76,6 +84,19 @@ claude-lunch_roulette/
 
 버그 리포트나 기능 제안은 [Issues](https://github.com/zeroslee21/claude-lunch_roulette/issues)에 등록해주세요.
 
+## 🔧 문제 해결
+
+### PWA 설치가 안 되는 경우
+1. **Chrome DevTools** 열기 (F12)
+2. **Application** 탭 → **Manifest** 확인
+3. **Service Workers** 상태 확인
+4. 오류가 있다면 콘솔 메시지 확인
+
+### 일반적인 해결 방법
+- 캐시 삭제 후 재시도
+- 시크릿 모드에서 테스트
+- Chrome 최신 버전 사용 확인
+
 ## 📄 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 공개되어 있습니다.
@@ -83,3 +104,29 @@ claude-lunch_roulette/
 ---
 
 Made with ❤️ by zeroslee21
+```
+
+## 5. .nojekyll
+
+```
+```
+(빈 파일입니다 - GitHub Pages에서 Jekyll 처리를 비활성화하기 위한 파일)
+
+---
+
+## 📋 파일 정리
+
+모든 파일을 GitHub repository에 다음과 같이 배치하세요:
+
+```
+claude-lunch_roulette/
+├── index.html
+├── manifest.json
+├── sw.js
+├── lunch_app_icon.png (직접 만드신 아이콘)
+├── lunch_app_opengraph.png (직접 만드신 오픈그래프 이미지)
+├── README.md
+└── .nojekyll
+```
+
+이제 완성된 PWA 점심 메뉴 룰렛 앱을 GitHub Pages에서 사용할 수 있습니다! 🎉
