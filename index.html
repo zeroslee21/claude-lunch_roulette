@@ -5,7 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>점심 메뉴 룰렛</title>
+    <title>오늘 점심 뭐 먹지? - 점심 메뉴 룰렛</title>
+    
+    <!-- PWA 매니페스트 -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- 파비콘 및 아이콘 -->
+    <link rel="icon" type="image/png" href="lunch_app_icon.png">
+    <link rel="apple-touch-icon" href="lunch_app_icon.png">
+    
+    <!-- 오픈그래프 메타 태그 -->
+    <meta property="og:title" content="오늘 점심 뭐 먹지? - 점심 메뉴 룰렛">
+    <meta property="og:description" content="점심 메뉴 고민은 이제 그만! 재미있는 룰렛으로 오늘의 점심을 결정하세요.">
+    <meta property="og:image" content="https://zeroslee21.github.io/claude-lunch_roulette/lunch_app_opengraph.png">
+    <meta property="og:url" content="https://zeroslee21.github.io/claude-lunch_roulette/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    
+    <!-- 트위터 카드 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="오늘 점심 뭐 먹지? - 점심 메뉴 룰렛">
+    <meta name="twitter:description" content="점심 메뉴 고민은 이제 그만! 재미있는 룰렛으로 오늘의 점심을 결정하세요.">
+    <meta name="twitter:image" content="https://zeroslee21.github.io/claude-lunch_roulette/lunch_app_opengraph.png">
+    
+    <!-- SEO 메타 태그 -->
+    <meta name="description" content="점심 메뉴를 재미있게 결정해주는 룰렛 앱. 메뉴를 추가하고 룰렛을 돌려 오늘의 점심을 정해보세요!">
+    <meta name="keywords" content="점심, 메뉴, 룰렛, 음식, 결정, 랜덤, PWA">
+    <meta name="author" content="zeroslee21">
+    
+    <!-- 테마 색상 -->
+    <meta name="theme-color" content="#5a47c7">
+    <meta name="msapplication-navbutton-color" content="#5a47c7">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         * {
@@ -991,6 +1022,29 @@
         setVH();
         window.addEventListener('resize', setVH);
         window.addEventListener('orientationchange', setVH);
+
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/claude-lunch_roulette/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker 등록 성공:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker 등록 실패:', error);
+                    });
+            });
+        }
+
+        // PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // 설치 버튼을 표시하거나 사용자에게 알림을 줄 수 있습니다
+            console.log('PWA 설치 가능');
+        });
 
         // 결과 팝업 표시
         function showResultPopup(menu) {
