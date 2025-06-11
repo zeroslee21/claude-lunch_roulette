@@ -104,29 +104,6 @@ claude-lunch_roulette/
 ---
 
 Made with ❤️ by zeroslee21
-```
 
-## 5. .nojekyll
-
-```
-```
-(빈 파일입니다 - GitHub Pages에서 Jekyll 처리를 비활성화하기 위한 파일)
-
----
-
-## 📋 파일 정리
-
-모든 파일을 GitHub repository에 다음과 같이 배치하세요:
-
-```
-claude-lunch_roulette/
-├── index.html
-├── manifest.json
-├── sw.js
-├── lunch_app_icon.png (직접 만드신 아이콘)
-├── lunch_app_opengraph.png (직접 만드신 오픈그래프 이미지)
-├── README.md
-└── .nojekyll
-```
 
 이제 완성된 PWA 점심 메뉴 룰렛 앱을 GitHub Pages에서 사용할 수 있습니다! 🎉
